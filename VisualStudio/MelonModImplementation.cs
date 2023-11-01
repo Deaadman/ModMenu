@@ -1,29 +1,30 @@
+using ModMenu.Utilities;
+
 namespace ModMenu;
 
 internal sealed class MelonModInitializer : MelonMod
 {
-    [HarmonyPatch(typeof(Panel_Sandbox), nameof(Panel_Sandbox.Initialize))]
-    private static class InitializeModMenu
+    public override void OnInitializeMelon()
     {
-        private static void Postfix(Panel_Sandbox __instance)
+        LoadLocalizations();
+    }
+
+    private static void LoadLocalizations()
+    {
+        const string JSONfile = "ModMenu.Resources.Localization.json";
+
+        try
         {
-            GameObject modMenuGO = new("Panel_ModMenu");
-            modMenuGO.transform.SetParent(__instance.gameObject.transform, false);
+            using Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(JSONfile) ?? throw new InvalidOperationException($"Failed to load resource: {JSONfile}");
+            using StreamReader reader = new(stream);
 
-            Panel_ModMenu modMenu = modMenuGO.GetComponent<Panel_ModMenu>();
-            if (modMenu == null)
-            {
-                modMenu = modMenuGO.AddComponent<Panel_ModMenu>();
+            string results = reader.ReadToEnd();
 
-                GameObject basicMenuRootGO = new("BasicMenuRoot");
-                basicMenuRootGO.transform.SetParent(modMenuGO.transform, false);
-                basicMenuRootGO.transform.localPosition = new Vector3(-473.2906f, 48, 0);
-
-                modMenu.m_BasicMenuRoot = basicMenuRootGO;
-
-                modMenu.Initialize();
-                modMenu.Enable(false);
-            }
+            LocalizationManager.LoadJsonLocalization(results);
+        }
+        catch (Exception ex)
+        {
+            Logging.LogError(ex.Message);
         }
     }
 }

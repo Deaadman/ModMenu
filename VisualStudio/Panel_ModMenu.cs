@@ -3,40 +3,36 @@ using static Il2Cpp.BasicMenu;
 
 namespace ModMenu;
 
-[RegisterTypeInIl2Cpp]
+[RegisterTypeInIl2Cpp(false)]
 public class Panel_ModMenu : MonoBehaviour
 {
     public Panel_ModMenu(IntPtr intPtr) : base(intPtr) { }
 
     private BasicMenu m_BasicMenu;
 
-    public GameObject m_BasicMenuRoot;
+    internal GameObject m_BasicMenuRoot;
 
-    public List<ModMenuItems> m_MenuItems;
+    internal GameObject m_ModsInstalledGameObject;
 
-    public class ModMenuItems
+    private List<ModMenuItems> m_MenuItems;
+
+    internal class ModMenuItems
     {
-        public string m_Type;
-
-        public string m_LabelLocalizationId;
+        internal string m_Type;
+        internal string m_LabelText;
+        internal string m_LabelDescription;
     }
 
     private void AddMenuItem(int itemIndex)
     {
         string modType = m_MenuItems[itemIndex].m_Type;
-        Logging.Log("Adding menu item with type: " + modType);
 
-        string labelLocalizationId = m_MenuItems[itemIndex].m_LabelLocalizationId;
-        string description = "GAMEPLAY_Description" + modType;
+        string labelText = m_MenuItems[itemIndex].m_LabelText;
+        string labelDescription = m_MenuItems[itemIndex].m_LabelDescription;
 
         Action actionFromType = GetActionFromType(modType);
-        if (actionFromType == null)
-        {
-            Logging.LogWarning("Action for menu item type: " + modType + " is null");
-        }
 
-        // NOTE: Modify the below line if m_BasicMenu.AddItem doesn't accept string for type
-        m_BasicMenu.AddItem(modType, modType.GetHashCode(), itemIndex, Localization.Get(labelLocalizationId), Localization.Get(description), null, actionFromType, Color.clear, Color.clear);
+        m_BasicMenu.AddItem(modType, modType.GetHashCode(), itemIndex, Localization.Get(labelText), Localization.Get(labelDescription), null, actionFromType, Color.clear, Color.clear);
     }
 
     private void ConfigureMenu()
@@ -53,48 +49,97 @@ public class Panel_ModMenu : MonoBehaviour
         m_BasicMenu.EnableConfirm(false, "GAMEPLAY_Select");
     }
 
-    public void Enable(bool enable)
+    internal void Enable(bool enable)
     {
         if (enable)
         {
             ConfigureMenu();
             m_BasicMenu.Enable(true);
             GameManager.GetCameraEffects().DepthOfFieldTurnOn();
+            m_ModsInstalledGameObject.SetActive(true);
             return;
         }
         m_BasicMenu.Enable(false);
         GameManager.GetCameraEffects().DepthOfFieldTurnOff(false);
+        m_ModsInstalledGameObject.SetActive(false);
     }
 
-    public Action GetActionFromType(string type)
+    private static Action GetActionFromType(string type)
     {
-        Logging.Log("Fetching action for mod type: " + type);
-        return new Action(OnModMenuItemClicked);
+        return new Action(() => OnModMenuItemClicked(type));
     }
 
-    public void Initialize()
+    internal void Initialize()
     {
         m_BasicMenu = InstantiateMenu(InterfaceManager.s_BasicMenuPrefab, m_BasicMenuRoot, gameObject, this);
+        m_BasicMenu.m_CanScroll = true;
         m_MenuItems = new List<ModMenuItems>();
 
-        var installedMods = ModFetcher.GetInstalledMods();
-        foreach (var mod in installedMods)
+        var loadedMods = ModFetcher.GetLoadedMods();
+        foreach (var (modName, modDescription) in loadedMods)
         {
-            m_MenuItems.Add(new ModMenuItems { m_Type = mod, m_LabelLocalizationId = $"GAMEPLAY_{mod.Replace(" ", "")}" });
-        }
+            string labelTextKey = $"GAMEPLAY_{modName.Replace(" ", "")}";
+            string descriptionKey = $"GAMEPLAY_{modName.Replace(" ", "")}Description";
 
-        Logging.Log("Menu initialized with " + m_MenuItems.Count + " items.");
+            string fallbackTitle = modName;
+            string fallbackDescription = modDescription;
+
+            string labelText = Localization.Get(labelTextKey);
+            if (labelText == labelTextKey) labelText = fallbackTitle;
+
+            string description = Localization.Get(descriptionKey);
+            if (description == descriptionKey) description = fallbackDescription;
+
+            m_MenuItems.Add(new ModMenuItems
+            {
+                m_Type = modName,
+                m_LabelText = labelText,
+                m_LabelDescription = description
+            });
+        }
     }
 
-    public void OnClickBack()
+    internal void InitializeGameObjects()
     {
-        Logging.Log("Back button clicked.");
+        GameObject basicMenuRootGameObject = new("BasicMenuRoot");
+        basicMenuRootGameObject.transform.SetParent(transform, false);
+        basicMenuRootGameObject.transform.localPosition = new Vector3(-473.2906f, 48, 0);
+
+        m_BasicMenuRoot = basicMenuRootGameObject;
+
+        m_ModsInstalledGameObject = new("ModsInstalled");
+        m_ModsInstalledGameObject.transform.SetParent(transform, false);
+        m_ModsInstalledGameObject.SetActive(false);
+
+        GameObject modsInstalledLabelGameObject = new("ModsInstalledLabel");
+        modsInstalledLabelGameObject.transform.SetParent(m_ModsInstalledGameObject.transform, false);
+        modsInstalledLabelGameObject.AddComponent<UILabel>();
+        modsInstalledLabelGameObject.transform.localPosition = new Vector3(-505, 255, 0);
+
+        UILabel modsInstalledLabel = modsInstalledLabelGameObject.GetComponent<UILabel>();
+
+        Panel_ChooseSandbox chooseSandboxPanel = InterfaceManager.GetPanel<Panel_ChooseSandbox>();
+        if (chooseSandboxPanel != null && chooseSandboxPanel.m_SlotsUsedLabel != null)
+        {
+            modsInstalledLabel.ambigiousFont = chooseSandboxPanel.m_SlotsUsedLabel.ambigiousFont;
+            modsInstalledLabel.bitmapFont = chooseSandboxPanel.m_SlotsUsedLabel.bitmapFont;
+            modsInstalledLabel.font = chooseSandboxPanel.m_SlotsUsedLabel.font;
+        }
+
+        var installedMods = ModFetcher.GetLoadedMods();
+        int numberOfModsLoaded = installedMods.Count;
+        string labelText = $"{numberOfModsLoaded} {Localization.Get("GAMEPLAY_ModsLoaded")}";
+
+        UserInterfaceUtilities.SetupLabel(modsInstalledLabel, labelText, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ResizeFreely, true, 20, 15, new Color(0.4784314f, 0.4784314f, 0.4784314f), true);
+    }
+
+    private void OnClickBack()
+    {
         GameAudioManager.PlayGUIButtonBack();
         Panel_Sandbox panelSandboxInstance = GetComponentInParent<Panel_Sandbox>();
 
         if (panelSandboxInstance)
         {
-            Logging.Log("Found Panel_Sandbox instance. Enabling it.");
             panelSandboxInstance.enabled = true;
 
             Transform parentTransform = panelSandboxInstance.gameObject.transform;
@@ -108,17 +153,12 @@ public class Panel_ModMenu : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            Logging.LogWarning("No Panel_Sandbox instance found on back button click.");
-        }
         Enable(false);
     }
 
-    public void OnModMenuItemClicked()
+    private static void OnModMenuItemClicked(string modType)
     {
-        // Handle what should happen when any mod menu item is clicked.
-        Logging.Log("Mod menu item clicked.");
+        GameAudioManager.PlayGUIButtonClick();
     }
 
     private void Update()

@@ -1,20 +1,45 @@
-﻿namespace ModMenu.Utilities;
-
-internal class ModFetcher
+﻿namespace ModMenu.Utilities
 {
-    internal static List<string> GetInstalledMods()
+    internal class ModFetcher
     {
-        List<string> installedMods = new();
-        Logging.Log("Fetching installed mods...");
-
-        foreach (var melon in MelonMod.RegisteredMelons)
+        internal static List<(string ModName, string Description)> GetLoadedMods()
         {
-            installedMods.Add(melon.Info.Name);
-            Logging.Log($"Added mod: {melon.Info.Name}");
+            List<(string ModName, string Description)> installedMods = new();
+
+            foreach (var melon in MelonMod.RegisteredMelons)
+            {
+                string modName = melon.Info.Name;
+                string description = GetAssemblyDescriptionForMod(modName) ?? "";
+                installedMods.Add((modName, description));
+            }
+
+            return installedMods;
         }
 
-        Logging.Log($"Total installed mods found: {installedMods.Count}");
+        private static string GetAssemblyDescriptionForMod(string modGuiName)
+        {
+            try
+            {
+                string assemblyNameSearch = modGuiName.Replace(" ", "");
+                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name.Equals(assemblyNameSearch, StringComparison.OrdinalIgnoreCase));
 
-        return installedMods;
+                if (assembly != null)
+                {
+                    var descriptionAttribute = assembly.GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false)
+                                                      .OfType<AssemblyDescriptionAttribute>().FirstOrDefault();
+
+                    if (descriptionAttribute != null)
+                    {
+                        return descriptionAttribute.Description;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logging.LogError($"{ex.Message}");
+            }
+
+            return null;
+        }
     }
 }
