@@ -13,7 +13,7 @@
 	<PropertyGroup>
 		<!-- This should point to wherever your games primary EXE is -->
 		<TheLongDarkPath>F:\SteamLibrary\steamapps\common\TheLongDark</TheLongDarkPath>
-		<ReleaseFolderPath>D:\The Long Dark\Mods\ModMenu\Release</ReleaseFolderPath>
+		<ReleaseFolderPath>D:\The Long Dark\Mods\Maintained\ModMenu\Release</ReleaseFolderPath>
 		<FileVersion></FileVersion>
 		<AssemblyVersion></AssemblyVersion>
 	</PropertyGroup>

@@ -10,11 +10,23 @@ public class Panel_ModMenu : MonoBehaviour
 
     private BasicMenu m_BasicMenu;
 
-    internal GameObject m_BasicMenuRoot;
+    #region GameObjects
+    private GameObject m_BasicMenuRoot;
+    private GameObject m_ModsLoaded;
+    #endregion
 
-    internal GameObject m_ModsInstalledGameObject;
+    #region Components
+    private UILabel m_ModsLoadedLabel;
+    #endregion
 
+    #region Lists
+    private List<(string ModName, string Description)> m_LoadedMods;
     private List<ModMenuItems> m_MenuItems;
+    #endregion
+
+    #region Panel References
+    private Panel_ChooseSandbox m_ChooseSandbox;
+    #endregion
 
     internal class ModMenuItems
     {
@@ -56,12 +68,12 @@ public class Panel_ModMenu : MonoBehaviour
             ConfigureMenu();
             m_BasicMenu.Enable(true);
             GameManager.GetCameraEffects().DepthOfFieldTurnOn();
-            m_ModsInstalledGameObject.SetActive(true);
+            m_ModsLoaded.SetActive(true);
             return;
         }
         m_BasicMenu.Enable(false);
         GameManager.GetCameraEffects().DepthOfFieldTurnOff(false);
-        m_ModsInstalledGameObject.SetActive(false);
+        m_ModsLoaded.SetActive(false);
     }
 
     private static Action GetActionFromType(string type)
@@ -101,36 +113,34 @@ public class Panel_ModMenu : MonoBehaviour
 
     internal void InitializeGameObjects()
     {
-        GameObject basicMenuRootGameObject = new("BasicMenuRoot");
-        basicMenuRootGameObject.transform.SetParent(transform, false);
-        basicMenuRootGameObject.transform.localPosition = new Vector3(-473.2906f, 48, 0);
+        m_BasicMenuRoot = new GameObject("MenuRoot");
+        m_BasicMenuRoot.transform.SetParent(transform, false);
+        m_BasicMenuRoot.transform.localPosition = new Vector3(-473.2906f, 48, 0);
 
-        m_BasicMenuRoot = basicMenuRootGameObject;
+        m_ModsLoaded = new GameObject("ModsLoaded");
+        m_ModsLoaded.transform.SetParent(transform, false);
+        m_ModsLoaded.SetActive(false);
 
-        m_ModsInstalledGameObject = new("ModsInstalled");
-        m_ModsInstalledGameObject.transform.SetParent(transform, false);
-        m_ModsInstalledGameObject.SetActive(false);
+        GameObject m_ModsLoadedLabelGO = new("ModsLoadedLabel");
+        m_ModsLoadedLabelGO.transform.SetParent(m_ModsLoaded.transform, false);
+        m_ModsLoadedLabelGO.AddComponent<UILabel>();
+        m_ModsLoadedLabelGO.transform.localPosition = new Vector3(-505, 255, 0);
 
-        GameObject modsInstalledLabelGameObject = new("ModsInstalledLabel");
-        modsInstalledLabelGameObject.transform.SetParent(m_ModsInstalledGameObject.transform, false);
-        modsInstalledLabelGameObject.AddComponent<UILabel>();
-        modsInstalledLabelGameObject.transform.localPosition = new Vector3(-505, 255, 0);
+        m_ModsLoadedLabel = m_ModsLoadedLabelGO.GetComponent<UILabel>();
 
-        UILabel modsInstalledLabel = modsInstalledLabelGameObject.GetComponent<UILabel>();
-
-        Panel_ChooseSandbox chooseSandboxPanel = InterfaceManager.GetPanel<Panel_ChooseSandbox>();
-        if (chooseSandboxPanel != null && chooseSandboxPanel.m_SlotsUsedLabel != null)
+        m_ChooseSandbox = InterfaceManager.GetPanel<Panel_ChooseSandbox>();
+        if (m_ChooseSandbox != null && m_ChooseSandbox.m_SlotsUsedLabel != null)
         {
-            modsInstalledLabel.ambigiousFont = chooseSandboxPanel.m_SlotsUsedLabel.ambigiousFont;
-            modsInstalledLabel.bitmapFont = chooseSandboxPanel.m_SlotsUsedLabel.bitmapFont;
-            modsInstalledLabel.font = chooseSandboxPanel.m_SlotsUsedLabel.font;
+            m_ModsLoadedLabel.ambigiousFont = m_ChooseSandbox.m_SlotsUsedLabel.ambigiousFont;
+            m_ModsLoadedLabel.bitmapFont = m_ChooseSandbox.m_SlotsUsedLabel.bitmapFont;
+            m_ModsLoadedLabel.font = m_ChooseSandbox.m_SlotsUsedLabel.font;
         }
 
-        var installedMods = ModFetcher.GetLoadedMods();
-        int numberOfModsLoaded = installedMods.Count;
+        m_LoadedMods = ModFetcher.GetLoadedMods();
+        int numberOfModsLoaded = m_LoadedMods.Count;
         string labelText = $"{numberOfModsLoaded} {Localization.Get("GAMEPLAY_ModsLoaded")}";
 
-        UserInterfaceUtilities.SetupLabel(modsInstalledLabel, labelText, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ResizeFreely, true, 20, 15, new Color(0.4784314f, 0.4784314f, 0.4784314f), true);
+        UserInterfaceUtilities.SetupLabel(m_ModsLoadedLabel, labelText, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ResizeFreely, true, 20, 15, new Color(0.4784314f, 0.4784314f, 0.4784314f), true);
     }
 
     private void OnClickBack()
