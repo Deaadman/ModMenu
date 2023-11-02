@@ -14,7 +14,6 @@ internal class InitializeModMenu
             if (modMenu == null)
             {
                 modMenu = modMenuGO.AddComponent<Panel_ModMenu>();
-                modMenu.InitializeGameObjects();
                 modMenu.Initialize();
                 modMenu.Enable(false);
             }

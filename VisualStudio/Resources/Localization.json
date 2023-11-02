@@ -66,7 +66,7 @@
   },
 
   "GAMEPLAY_ModMenuDescription": {
-    "English": "Testing to see if localizations work.",
+    "English": "MEOWWWWWWWWWWWWWWWWW.",
     "German": "",
     "Russian": "",
     "French (France)": "",
@@ -87,8 +87,52 @@
     "Ukrainian": ""
   },
 
-  "GAMEPLAY_ModsLoaded": {
-    "English": "Mods Loaded",
+  "GAMEPLAY_ModsAnd": {
+    "English": "Mods and",
+    "German": "",
+    "Russian": "",
+    "French (France)": "",
+    "Japanese": "",
+    "Korean": "",
+    "Simplified Chinese": "",
+    "Swedish": "",
+    "Traditional Chinese": "",
+    "Turkish": "",
+    "Norwegian": "",
+    "Spanish (Spain)": "",
+    "Portuguese (Portugal)": "",
+    "Portuguese (Brazil)": "",
+    "Dutch": "",
+    "Finnish": "",
+    "Italian": "",
+    "Polish": "",
+    "Ukrainian": ""
+  },
+
+  "GAMEPLAY_PluginLoaded": {
+    "English": "Plugin Loaded",
+    "German": "",
+    "Russian": "",
+    "French (France)": "",
+    "Japanese": "",
+    "Korean": "",
+    "Simplified Chinese": "",
+    "Swedish": "",
+    "Traditional Chinese": "",
+    "Turkish": "",
+    "Norwegian": "",
+    "Spanish (Spain)": "",
+    "Portuguese (Portugal)": "",
+    "Portuguese (Brazil)": "",
+    "Dutch": "",
+    "Finnish": "",
+    "Italian": "",
+    "Polish": "",
+    "Ukrainian": ""
+  },
+
+  "GAMEPLAY_PluginsLoaded": {
+    "English": "Plugins Loaded",
     "German": "",
     "Russian": "",
     "French (France)": "",
