@@ -1,43 +1,55 @@
-﻿//using Newtonsoft.Json.Linq;
+﻿namespace ModMenu.Utilities;
 
-//namespace ModMenu.Utilities;
+internal class ModInfoFetcher
+{
+    internal static List<(string ModType, string ModName, string ModDescription, string ModVersion, string ModAuthor, string ModLoaderVersion, string modVersionCached)> GetLoadedMods()
+    {
+        var installedMods = new List<(string ModType, string ModName, string ModDescription, string ModVersion, string ModAuthor, string ModLoaderVersion, string modVersionCached)>();
+        var allMelons = MelonMod.RegisteredMelons.Cast<MelonBase>().Concat(MelonPlugin.RegisteredMelons.Cast<MelonBase>());
+        var cachedModVersions = CacheManager.GetCachedModVersions();
 
-//internal class ModInfoFetcher
-//{
-//    private const string ModInfoApiUrl = "https://tld.xpazeapps.com/api.php?pp";
-//    private readonly HttpClient _httpClient;
+        foreach (var melon in allMelons)
+        {
+            var modType = melon is MelonMod ? "Mod" : "Plugin";
+            var modName = melon.Info.Name.Replace(" ", "");
+            var modDescription = GetAttributeValue<AssemblyDescriptionAttribute>(melon.GetType().Assembly, attr => attr.Description) ?? string.Empty;
+            // var modVersion = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version); ?? string.Empty;      // Code used to default to using the API version if no assembly version was found.
+            var modVersion = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version);
+            if (string.IsNullOrEmpty(modVersion))
+            {
+                continue;  // If modVersion is null or empty, skip this iteration.
+            }
+            var modAuthor = melon.Info.Author ?? string.Empty;
+            var modLoaderVersion = GetModLoaderVersion(melon.GetType().Assembly) ?? string.Empty;
+            var modVersionCached = cachedModVersions != null && cachedModVersions.TryGetValue(modName, out var version) ? version : string.Empty;
 
-//    public ModInfoFetcher()
-//    {
-//        _httpClient = new HttpClient();
-//    }
+            installedMods.Add((
+                ModType: modType,
+                ModName: modName,
+                ModDescription: modDescription,
+                ModVersion: modVersion,
+                ModAuthor: modAuthor,
+                ModLoaderVersion: modLoaderVersion,
+                modVersionCached: modVersionCached
+            ));
+        }
+        return installedMods;
+    }
 
-//    public async Task<Dictionary<string, string>> FetchModVersionsAsync()
-//    {
-//        var modVersions = new Dictionary<string, string>();
-//        try
-//        {
-//            string jsonResponse = await _httpClient.GetStringAsync(ModInfoApiUrl);
-//            var modsData = JObject.Parse(jsonResponse);
+    private static string GetModLoaderVersion(Assembly assembly)
+    {
+        var verifyLoaderVersionAttribute = assembly.GetCustomAttributes(typeof(VerifyLoaderVersionAttribute), false)
+                                                   .OfType<VerifyLoaderVersionAttribute>().FirstOrDefault();
+        if (verifyLoaderVersionAttribute != null)
+        {
+            return $"{verifyLoaderVersionAttribute.SemVer.Major}.{verifyLoaderVersionAttribute.SemVer.Minor}.{verifyLoaderVersionAttribute.SemVer.Patch}";
+        }
+        return string.Empty;
+    }
 
-//            foreach (var mod in modsData)
-//            {
-//                string modName = mod.Key;
-//                string version = mod.Value["Version"]?.ToString();
-
-//                if (!string.IsNullOrEmpty(modName) && !string.IsNullOrEmpty(version))
-//                {
-//                    modVersions.Add(modName, version);
-//                }
-//            }
-//        }
-//        catch (Exception ex)
-//        {
-//            // Handle any errors that occur during the API call.
-//            // This could be logging the exception or throwing it to be handled elsewhere.
-//            Logging.LogError($"Error fetching mod versions: {ex.Message}");
-//        }
-
-//        return modVersions;
-//    }
-//}
+    private static string GetAttributeValue<TAttr>(Assembly assembly, Func<TAttr, string> valueSelector) where TAttr : Attribute
+    {
+        var attribute = assembly.GetCustomAttributes(typeof(TAttr), false).OfType<TAttr>().FirstOrDefault();
+        return attribute != null ? valueSelector(attribute) : string.Empty;
+    }
+}

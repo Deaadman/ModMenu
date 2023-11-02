@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace ModMenu.Utilities;
+﻿namespace ModMenu.Utilities;
 
 internal class UserInterfaceUtilities
 {

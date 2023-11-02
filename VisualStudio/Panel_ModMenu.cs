@@ -15,21 +15,17 @@ public class Panel_ModMenu : MonoBehaviour
     private GameObject m_ModsLoaded;
     private GameObject m_RightSide;
     #endregion
-
-    private UISprite? m_BackgroundSprite;
-
+  
     #region Components
     private UILabel m_ModsLoadedLabel;
-
     private UILabel m_ModsTitle;
-
     private UILabel m_ModsDescription;
-
     private UILabel m_ModsVersion;
-
     private UILabel m_AuthorName;
-
     private UILabel m_MelonVersion;
+    private UILabel m_APIVersion;
+
+    private UISprite? m_BackgroundSprite;
     #endregion
 
     #region Fields
@@ -49,6 +45,7 @@ public class Panel_ModMenu : MonoBehaviour
         internal string m_LabelVersion;
         internal string m_LabelAuthor;
         internal string m_LabelLoaderVersion;
+        internal string m_LabelAPIVersion;
     }
 
     private void AddMenuItem(int itemIndex)
@@ -73,7 +70,7 @@ public class Panel_ModMenu : MonoBehaviour
         m_BasicMenu.Reset();
         m_BasicMenu.UpdateTitle("GAMEPLAY_ModMenu", "", Vector3.zero);
 
-        var loadedMods = ModFetcher.GetLoadedMods();
+        var loadedMods = ModInfoFetcher.GetLoadedMods();
         int modsCount = loadedMods.Count(m => m.ModType == "Mod");
         int pluginsCount = loadedMods.Count(m => m.ModType == "Plugin");
 
@@ -88,13 +85,10 @@ public class Panel_ModMenu : MonoBehaviour
         for (int i = 0; i < m_MenuItems.Count; i++)
         {
             string modType = m_MenuItems[i].m_Type;
-            Action actionFromType = () => OnSlotClicked(modType);
-
             AddMenuItem(i);
         }
 
         m_BasicMenu.SetBackAction(new Action(OnClickBack));
-        m_BasicMenu.EnableConfirm(false, "GAMEPLAY_Select");
     }
 
     internal void Enable(bool enable)
@@ -127,8 +121,8 @@ public class Panel_ModMenu : MonoBehaviour
         m_BasicMenu.m_CanScroll = true;
         m_MenuItems = new List<ModMenuItems>();
 
-        var loadedMods = ModFetcher.GetLoadedMods();
-        foreach (var (modType, modName, modDescription, modVersion, modAuthor, loaderVersion) in loadedMods)
+        var loadedMods = ModInfoFetcher.GetLoadedMods();
+        foreach (var (modType, modName, modDescription, modVersion, modAuthor, loaderVersion, apiVersion) in loadedMods)
         {
             string labelTextKey = $"GAMEPLAY_{modName.Replace(" ", "")}";
             string descriptionKey = $"GAMEPLAY_{modName.Replace(" ", "")}Description";
@@ -150,6 +144,7 @@ public class Panel_ModMenu : MonoBehaviour
                 m_LabelVersion = modVersion,
                 m_LabelAuthor = modAuthor,
                 m_LabelLoaderVersion = loaderVersion,
+                m_LabelAPIVersion = apiVersion,
             });
         }
     }
@@ -172,8 +167,6 @@ public class Panel_ModMenu : MonoBehaviour
     {
         m_RightSide = UserInterfaceUtilities.SetupGameObject("Right Side", transform, new Vector3(0, 278, 0));
         m_RightSide.SetActive(false);
-
-
 
         GameObject BackgroundSprite = UserInterfaceUtilities.SetupGameObject("BackgroundSprite", m_RightSide.transform, new Vector3(0, -7, 0));
         BackgroundSprite.AddComponent<UISprite>();
@@ -199,32 +192,6 @@ public class Panel_ModMenu : MonoBehaviour
 
         UserInterfaceUtilities.SetupUISprite(m_BackgroundSprite, "inv_statBack", new Color(0.4314f, 0.5137f, 0.4863f, 0.1569f), 35, 100);
 
-        //
-        //GameObject ButtonAuthor = UserInterfaceUtilities.SetupGameObject("ButtonAuthor", m_RightSide.transform, new Vector3(0, -278, 0));
-        //ButtonAuthor.AddComponent<UISprite>();
-        //ButtonAuthor.AddComponent<UIButton>();
-        //ButtonAuthor.AddComponent<BoxCollider>();
-        //m_BackgroundSprite = ButtonAuthor.GetComponent<UISprite>();
-
-        //UIButton ButtonAuthorUIButton = ButtonAuthor.GetComponent<UIButton>();
-        //ButtonAuthorUIButton.normalSprite = "ico_knowledge_people";
-        //ButtonAuthorUIButton.hoverSprite = "";
-        //ButtonAuthorUIButton.normalSprite = "";
-        //ButtonAuthorUIButton.pressedSprite = "";
-        //ButtonAuthorUIButton.isEnabled = true;
-        //ButtonAuthorUIButton.mSprite = m_BackgroundSprite;
-        //ButtonAuthorUIButton.onClick = null;
-
-        //UserInterfaceUtilities.SetupUISprite(m_BackgroundSprite, "ico_knowledge_people", new Color(0.7843f, 0.7843f, 0.7843f, 0.4392f), 42, 42);
-        //m_BackgroundSprite.depth = 1;
-
-        //GameObject ButtonAuthorBG = UserInterfaceUtilities.SetupGameObject("ButtonAuthorBG", ButtonAuthor.transform, Vector3.zero);
-        //ButtonAuthorBG.AddComponent<UISprite>();
-        //m_BackgroundSprite = ButtonAuthorBG.GetComponent<UISprite>();
-
-        //UserInterfaceUtilities.SetupUISprite(m_BackgroundSprite, "inv_Tab_selected", new Color(0.9804f, 0.9804f, 0.9804f, 1), 56, 56);
-        //
-
         GameObject ModsTitle = UserInterfaceUtilities.SetupGameObject("ModsTitle", m_RightSide.transform, new Vector3(0, 5, 0));
         ModsTitle.AddComponent<UILabel>();
         m_ModsTitle = ModsTitle.GetComponent<UILabel>();
@@ -245,11 +212,16 @@ public class Panel_ModMenu : MonoBehaviour
         MelonVersion.AddComponent<UILabel>();
         m_MelonVersion = MelonVersion.GetComponent<UILabel>();
 
+        GameObject APIVersion = UserInterfaceUtilities.SetupGameObject("APIVersion", m_RightSide.transform, new Vector3(0, -276, 0));
+        APIVersion.AddComponent<UILabel>();
+        m_APIVersion = APIVersion.GetComponent<UILabel>();
+
         UserInterfaceUtilities.SetupLabelWithHeightAndWidth(m_ModsTitle, null, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 30, Color.white, true, 76, 450);
         UserInterfaceUtilities.SetupLabelWithHeightAndWidth(m_ModsDescription, null, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 15, Color.white, false, 76, 450);
         UserInterfaceUtilities.SetupLabel(m_ModsVersion, null, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 20, Color.white, false);
-        UserInterfaceUtilities.SetupLabel(m_AuthorName, "TESTING", FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 20, Color.white, true);
+        UserInterfaceUtilities.SetupLabel(m_AuthorName, null, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 20, Color.white, true);
         UserInterfaceUtilities.SetupLabel(m_MelonVersion, null, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 20, Color.white, false);
+        UserInterfaceUtilities.SetupLabelWithHeightAndWidth(m_APIVersion, null, FontStyle.Normal, UILabel.Crispness.Always, NGUIText.Alignment.Center, UILabel.Overflow.ShrinkContent, true, 20, 30, Color.white, false, 76, 450);
     }
 
     private void OnClickBack()
@@ -283,18 +255,18 @@ public class Panel_ModMenu : MonoBehaviour
         var menuItem = m_MenuItems.FirstOrDefault(item => item.m_Type == modType);
         if (menuItem != null)
         {
-            // Update the title and description labels with the mod's details
             if (m_ModsTitle != null)
             {
-                m_ModsTitle.text = menuItem.m_LabelText; // Update the title label with the mod's name
+                m_ModsTitle.text = menuItem.m_LabelText;
             }
             if (m_ModsDescription != null)
             {
-                m_ModsDescription.text = menuItem.m_LabelDescription; // Update the description label with the mod's description
+                m_ModsDescription.text = menuItem.m_LabelDescription;
             }
             if (m_ModsVersion != null)
             {
                 m_ModsVersion.text = !string.IsNullOrEmpty(menuItem.m_LabelVersion) ? $"v{menuItem.m_LabelVersion}" : "";
+                Logging.Log($"Set m_ModsVersion.text to: {m_ModsVersion.text}");
             }
             if (m_AuthorName != null)
             {
@@ -303,6 +275,11 @@ public class Panel_ModMenu : MonoBehaviour
             if (m_MelonVersion != null)
             {
                 m_MelonVersion.text = !string.IsNullOrEmpty(menuItem.m_LabelLoaderVersion) ? $"v{menuItem.m_LabelLoaderVersion}" : "";
+            }
+            if (m_APIVersion != null)
+            {
+                m_APIVersion.text = !string.IsNullOrEmpty(menuItem.m_LabelAPIVersion) ? $"API Version = v{menuItem.m_LabelAPIVersion}" : "";
+                Logging.Log($"Set m_APIVersion.text to: {m_APIVersion.text}");
             }
         }
     }

@@ -6,6 +6,7 @@ internal sealed class MelonModInitializer : MelonMod
 {
     public override void OnInitializeMelon()
     {
+        _ = ModInfoFetcherAPI.FetchModVersionsAsync();
         LoadLocalizations();
     }
 
