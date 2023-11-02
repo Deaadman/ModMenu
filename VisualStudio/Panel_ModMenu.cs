@@ -70,7 +70,7 @@ public class Panel_ModMenu : MonoBehaviour
         m_BasicMenu.Reset();
         m_BasicMenu.UpdateTitle("GAMEPLAY_ModMenu", "", Vector3.zero);
 
-        var loadedMods = ModInfoFetcher.GetLoadedMods();
+        var loadedMods = ModDetailsProvider.GetLoadedMods();
         int modsCount = loadedMods.Count(m => m.ModType == "Mod");
         int pluginsCount = loadedMods.Count(m => m.ModType == "Plugin");
 
@@ -121,7 +121,7 @@ public class Panel_ModMenu : MonoBehaviour
         m_BasicMenu.m_CanScroll = true;
         m_MenuItems = new List<ModMenuItems>();
 
-        var loadedMods = ModInfoFetcher.GetLoadedMods();
+        var loadedMods = ModDetailsProvider.GetLoadedMods();
         foreach (var (modType, modName, modDescription, modVersion, modAuthor, loaderVersion, apiVersion) in loadedMods)
         {
             string labelTextKey = $"GAMEPLAY_{modName.Replace(" ", "")}";

@@ -1,6 +1,6 @@
 ﻿namespace ModMenu.Utilities;
 
-internal class ModInfoFetcher
+internal class ModDetailsProvider
 {
     internal static List<(string ModType, string ModName, string ModDescription, string ModVersion, string ModAuthor, string ModLoaderVersion, string modVersionCached)> GetLoadedMods()
     {
@@ -13,12 +13,7 @@ internal class ModInfoFetcher
             var modType = melon is MelonMod ? "Mod" : "Plugin";
             var modName = melon.Info.Name.Replace(" ", "");
             var modDescription = GetAttributeValue<AssemblyDescriptionAttribute>(melon.GetType().Assembly, attr => attr.Description) ?? string.Empty;
-            // var modVersion = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version); ?? string.Empty;      // Code used to default to using the API version if no assembly version was found.
-            var modVersion = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version);
-            if (string.IsNullOrEmpty(modVersion))
-            {
-                continue;  // If modVersion is null or empty, skip this iteration.
-            }
+            var modVersion = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version) ?? string.Empty;
             var modAuthor = melon.Info.Author ?? string.Empty;
             var modLoaderVersion = GetModLoaderVersion(melon.GetType().Assembly) ?? string.Empty;
             var modVersionCached = cachedModVersions != null && cachedModVersions.TryGetValue(modName, out var version) ? version : string.Empty;

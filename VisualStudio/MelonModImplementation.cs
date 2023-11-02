@@ -4,9 +4,13 @@ namespace ModMenu;
 
 internal sealed class MelonModInitializer : MelonMod
 {
+    public override void OnEarlyInitializeMelon()
+    {
+        _ = ModVersionChecker.FetchModVersionsAsync();
+    }
+
     public override void OnInitializeMelon()
     {
-        _ = ModInfoFetcherAPI.FetchModVersionsAsync();
         LoadLocalizations();
     }
 

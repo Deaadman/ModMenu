@@ -2,19 +2,15 @@
 
 namespace ModMenu.Utilities;
 
-internal class ModInfoFetcherAPI : IDisposable
+internal class ModVersionChecker : IDisposable
 {
     private const string ModInfoApiUrl = "https://tld.xpazeapps.com/api.php?pp";
     private static readonly HttpClient _httpClient = new();
 
-    public static async Task<Dictionary<string, string>> FetchModVersionsAsync()
+    internal static async Task<Dictionary<string, string>> FetchModVersionsAsync()
     {
         var cachedModVersions = CacheManager.GetCachedModVersions();
-        if (cachedModVersions != null && !CacheManager.IsCacheExpired())
-        {
-            Logging.Log("Using cached mod versions.");
-            return cachedModVersions;
-        }
+        var modVersionsToUpdate = new Dictionary<string, string>();
 
         Logging.Log("Fetching new mod versions from API.");
         var modVersions = new Dictionary<string, string>();
@@ -33,18 +29,23 @@ internal class ModInfoFetcherAPI : IDisposable
                     if (!string.IsNullOrEmpty(version))
                     {
                         modVersions[modName] = version;
-                        ConsoleColor logColor = ConsoleColor.White;
-                        if (cachedModVersions == null || !cachedModVersions.TryGetValue(modName, out string? cachedVersion) || cachedVersion != version)
+                        if (!cachedModVersions.TryGetValue(modName, out string? cachedVersion) || cachedVersion != version)
                         {
-                            logColor = ConsoleColor.Green;
+                            modVersionsToUpdate[modName] = version;
+                            LogVersionChange(modName, cachedVersion, version);
                         }
-
-                        LogModVersion(modName, version, logColor);
                     }
                 }
             }
 
-            CacheManager.UpdateCache(modVersions);
+            if (modVersionsToUpdate.Count > 0)
+            {
+                CacheManager.UpdateCache(modVersionsToUpdate);
+            }
+            else
+            {
+                Logging.Log("No mod version updates found. Cache not updated.");
+            }
         }
         catch (HttpRequestException httpEx)
         {
@@ -62,9 +63,11 @@ internal class ModInfoFetcherAPI : IDisposable
         return modVersions;
     }
 
-    private static void LogModVersion(string modName, string version, ConsoleColor color)
+    private static void LogVersionChange(string modName, string? oldVersion, string newVersion)
     {
-        Logging.LogColor(color, $"Mod: {modName}, Version: {version}");
+        ConsoleColor logColor = ConsoleColor.Green; // Updated versions are logged in green
+        string oldVersionDisplay = string.IsNullOrEmpty(oldVersion) ? "None" : oldVersion;
+        Logging.LogColor(logColor, $"Mod = {modName}, Version: {oldVersionDisplay} --> {newVersion}");
     }
 
     public void Dispose()

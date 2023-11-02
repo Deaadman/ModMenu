@@ -5,39 +5,37 @@ namespace ModMenu.Utilities;
 internal static class CacheManager
 {
     private static readonly string cacheFilePath = "APICachedMods.json";
-    private static readonly TimeSpan cacheDuration = TimeSpan.FromHours(1);
 
-    public static Dictionary<string, string>? GetCachedModVersions()
+    internal static Dictionary<string, string> GetCachedModVersions()
     {
         if (!File.Exists(cacheFilePath))
         {
             Logging.Log("Cache file not found. Will fetch from API.");
-            return null;
+            return new Dictionary<string, string>();
         }
 
         string json = File.ReadAllText(cacheFilePath);
-        var cachedData = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
-        Logging.Log("Fetched mod versions from cache.");
-        return cachedData;
+        return JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new Dictionary<string, string>();
     }
 
-    public static void UpdateCache(Dictionary<string, string> modVersions)
+    internal static void UpdateCache(Dictionary<string, string> updates)
     {
-        string json = JsonSerializer.Serialize(modVersions);
-        File.WriteAllText(cacheFilePath, json);
-        Logging.Log("Cache updated with new mod versions.");
-    }
-
-    public static bool IsCacheExpired()
-    {
-        if (!File.Exists(cacheFilePath))
+        var currentCache = GetCachedModVersions();
+        bool cacheUpdated = false;
+        foreach (var update in updates)
         {
-            return true;
+            if (!currentCache.TryGetValue(update.Key, out string? currentVersion) || currentVersion != update.Value)
+            {
+                currentCache[update.Key] = update.Value;
+                cacheUpdated = true;
+            }
         }
 
-        var lastWriteTime = File.GetLastWriteTime(cacheFilePath);
-        bool expired = DateTime.Now - lastWriteTime > cacheDuration;
-        Logging.Log(expired ? "Cache has expired. Need to fetch from API." : "Cache is still valid.");
-        return expired;
+        if (cacheUpdated)
+        {
+            string json = JsonSerializer.Serialize(currentCache, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(cacheFilePath, json);
+            Logging.Log("Cache updated with new mod versions.");
+        }
     }
 }
