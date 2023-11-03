@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
+using ModMenu.Utilities;
 
-namespace ModMenu.Utilities;
+namespace ModMenu;
 
 internal static class CacheManager
 {

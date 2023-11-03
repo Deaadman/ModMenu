@@ -20,7 +20,7 @@ internal class InitializeMenuItem
 
             Color defaultHighlightTint = Color.white;
 
-            BasicMenu.BasicMenuItemModel newItem = new("", MOD_MENU_ID, desiredIndex, Localization.Get("GAMEPLAY_Mods"), Localization.Get("GAMEPLAY_ModsDescription"),null,new Action(() => ShowModMenu(__instance)),firstItem.m_NormalTint,defaultHighlightTint);
+            BasicMenu.BasicMenuItemModel newItem = new("", MOD_MENU_ID, desiredIndex, Localization.Get("GAMEPLAY_Mods"), Localization.Get("GAMEPLAY_ModsDescription"), null, new Action(() => ShowModMenu(__instance)),firstItem.m_NormalTint,defaultHighlightTint);
 
             basicMenu.m_ItemModelList.Insert(desiredIndex, newItem);
         }

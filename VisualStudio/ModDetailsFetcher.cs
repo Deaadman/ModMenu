@@ -1,6 +1,6 @@
-﻿namespace ModMenu.Utilities;
+﻿namespace ModMenu;
 
-internal class ModDetailsProvider
+internal class ModDetailsFetcher
 {
     internal static List<(string ModType, string ModName, string ModDescription, string ModVersion, string ModAuthor, string ModLoaderVersion, string modVersionCached)> GetLoadedMods()
     {
@@ -25,7 +25,7 @@ internal class ModDetailsProvider
                 ModVersion: modVersion,
                 ModAuthor: modAuthor,
                 ModLoaderVersion: modLoaderVersion,
-                modVersionCached: modVersionCached
+                modVersionCached
             ));
         }
         return installedMods;
