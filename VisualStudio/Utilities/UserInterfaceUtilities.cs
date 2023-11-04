@@ -10,12 +10,21 @@ internal class UserInterfaceUtilities
         return newGameObject;
     }
 
+    internal static GameObject SetupGameObjectExtended(string name, Transform parent, Vector3 localPosition, Quaternion localRotation)
+    {
+        GameObject newGameObject = new(name);
+        newGameObject.transform.SetParent(parent, false);
+        newGameObject.transform.localPosition = localPosition;
+        newGameObject.transform.localRotation = localRotation;
+        return newGameObject;
+    }
+
     internal static void SetupLabel(UILabel label, string text, FontStyle fontStyle, UILabel.Crispness crispness, NGUIText.Alignment alignment, UILabel.Overflow overflow, bool mulitLine, int depth, int fontSize, Color color, bool capsLock)
     {
         label.text = text;
-        label.ambigiousFont = InterfaceManager.GetPanel<Panel_ChooseSandbox>().m_SlotsUsedLabel.ambigiousFont;
-        label.bitmapFont = InterfaceManager.GetPanel<Panel_ChooseSandbox>().m_SlotsUsedLabel.bitmapFont;
-        label.font = InterfaceManager.GetPanel<Panel_ChooseSandbox>().m_SlotsUsedLabel.font;
+        label.ambigiousFont = InterfaceManager.GetPanel<Panel_MainMenu>().m_VersionLabel.ambigiousFont;
+        label.bitmapFont = InterfaceManager.GetPanel<Panel_MainMenu>().m_VersionLabel.bitmapFont;
+        label.font = InterfaceManager.GetPanel<Panel_MainMenu>().m_VersionLabel.font;
 
         label.fontStyle = fontStyle;
         label.keepCrispWhenShrunk = crispness;
@@ -28,12 +37,12 @@ internal class UserInterfaceUtilities
         label.capsLock = capsLock;
     }
 
-    internal static void SetupLabelWithHeightAndWidth(UILabel label, string text, FontStyle fontStyle, UILabel.Crispness crispness, NGUIText.Alignment alignment, UILabel.Overflow overflow, bool mulitLine, int depth, int fontSize, Color color, bool capsLock, int lineHeight, int lineWidth)
+    internal static void SetupLabelExtended(UILabel label, string text, FontStyle fontStyle, UILabel.Crispness crispness, NGUIText.Alignment alignment, UILabel.Overflow overflow, bool mulitLine, int depth, int fontSize, Color color, bool capsLock, int lineHeight, int lineWidth, int spacingY, int spacingX)
     {
         label.text = text;
-        label.ambigiousFont = InterfaceManager.GetPanel<Panel_ChooseSandbox>().m_SlotsUsedLabel.ambigiousFont;
-        label.bitmapFont = InterfaceManager.GetPanel<Panel_ChooseSandbox>().m_SlotsUsedLabel.bitmapFont;
-        label.font = InterfaceManager.GetPanel<Panel_ChooseSandbox>().m_SlotsUsedLabel.font;
+        label.ambigiousFont = InterfaceManager.GetPanel<Panel_MainMenu>().m_VersionLabel.ambigiousFont;
+        label.bitmapFont = InterfaceManager.GetPanel<Panel_MainMenu>().m_VersionLabel.bitmapFont;
+        label.font = InterfaceManager.GetPanel<Panel_MainMenu>().m_VersionLabel.font;
 
         label.fontStyle = fontStyle;
         label.keepCrispWhenShrunk = crispness;
@@ -46,6 +55,8 @@ internal class UserInterfaceUtilities
         label.capsLock = capsLock;
         label.lineHeight = lineHeight;
         label.lineWidth = lineWidth;
+        label.spacingY = spacingY;
+        label.spacingX = spacingX;
     }
 
     public static void SetupUISprite(UISprite sprite, string spriteName, Color color, int height, int width)

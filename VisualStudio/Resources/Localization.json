@@ -21,28 +21,6 @@
     "Ukrainian": ""
   },
 
-  "GAMEPLAY_ModsDescription": {
-    "English": "Adds a mod menu to view the list of mods you have installed.",
-    "German": "",
-    "Russian": "",
-    "French (France)": "",
-    "Japanese": "",
-    "Korean": "",
-    "Simplified Chinese": "",
-    "Swedish": "",
-    "Traditional Chinese": "",
-    "Turkish": "",
-    "Norwegian": "",
-    "Spanish (Spain)": "",
-    "Portuguese (Portugal)": "",
-    "Portuguese (Brazil)": "",
-    "Dutch": "",
-    "Finnish": "",
-    "Italian": "",
-    "Polish": "",
-    "Ukrainian": ""
-  },
-
   "GAMEPLAY_ModMenu": {
     "English": "Mod Menu",
     "German": "",
@@ -66,7 +44,7 @@
   },
 
   "GAMEPLAY_ModMenuDescription": {
-    "English": "MEOWWWWWWWWWWWWWWWWW.",
+    "English": "Adds a mod menu to view the list of mods you have installed.",
     "German": "",
     "Russian": "",
     "French (France)": "",
@@ -87,8 +65,8 @@
     "Ukrainian": ""
   },
 
-  "GAMEPLAY_ModsAnd": {
-    "English": "Mods and",
+  "GAMEPLAY_CurrentVersion": {
+    "English": "Current Version",
     "German": "",
     "Russian": "",
     "French (France)": "",
@@ -109,8 +87,8 @@
     "Ukrainian": ""
   },
 
-  "GAMEPLAY_PluginLoaded": {
-    "English": "Plugin Loaded",
+  "GAMEPLAY_LatestVersion": {
+    "English": "Latest Version",
     "German": "",
     "Russian": "",
     "French (France)": "",
@@ -131,8 +109,74 @@
     "Ukrainian": ""
   },
 
-  "GAMEPLAY_PluginsLoaded": {
-    "English": "Plugins Loaded",
+  "GAMEPLAY_Plugin": {
+    "English": "Plugin",
+    "German": "",
+    "Russian": "",
+    "French (France)": "",
+    "Japanese": "",
+    "Korean": "",
+    "Simplified Chinese": "",
+    "Swedish": "",
+    "Traditional Chinese": "",
+    "Turkish": "",
+    "Norwegian": "",
+    "Spanish (Spain)": "",
+    "Portuguese (Portugal)": "",
+    "Portuguese (Brazil)": "",
+    "Dutch": "",
+    "Finnish": "",
+    "Italian": "",
+    "Polish": "",
+    "Ukrainian": ""
+  },
+
+  "GAMEPLAY_Plugins": {
+    "English": "Plugins",
+    "German": "",
+    "Russian": "",
+    "French (France)": "",
+    "Japanese": "",
+    "Korean": "",
+    "Simplified Chinese": "",
+    "Swedish": "",
+    "Traditional Chinese": "",
+    "Turkish": "",
+    "Norwegian": "",
+    "Spanish (Spain)": "",
+    "Portuguese (Portugal)": "",
+    "Portuguese (Brazil)": "",
+    "Dutch": "",
+    "Finnish": "",
+    "Italian": "",
+    "Polish": "",
+    "Ukrainian": ""
+  },
+
+  "GAMEPLAY_Loaded": {
+    "English": "Loaded",
+    "German": "",
+    "Russian": "",
+    "French (France)": "",
+    "Japanese": "",
+    "Korean": "",
+    "Simplified Chinese": "",
+    "Swedish": "",
+    "Traditional Chinese": "",
+    "Turkish": "",
+    "Norwegian": "",
+    "Spanish (Spain)": "",
+    "Portuguese (Portugal)": "",
+    "Portuguese (Brazil)": "",
+    "Dutch": "",
+    "Finnish": "",
+    "Italian": "",
+    "Polish": "",
+    "Ukrainian": ""
+  },
+
+  "GAMEPLAY_And": {
+    "English": "and",
     "German": "",
     "Russian": "",
     "French (France)": "",
