@@ -12,6 +12,6 @@ public class ModConfig : ScriptableObject
     internal string m_ModDescription;
     internal string m_ModVersion;
     internal string m_ModAuthor;
-    internal string m_ModLoaderVersion;
+    internal string m_ModVersionMelonLoader;
     internal string m_ModVersionCached;
 }

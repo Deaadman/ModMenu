@@ -1,4 +1,6 @@
-﻿namespace ModMenu;
+﻿using ModMenu.Utilities;
+
+namespace ModMenu;
 
 internal class ModDetailsFetcher
 {
@@ -47,4 +49,44 @@ internal class ModDetailsFetcher
         var attribute = assembly.GetCustomAttributes(typeof(TAttr), false).OfType<TAttr>().FirstOrDefault();
         return attribute != null ? valueSelector(attribute) : string.Empty;
     }
+
+    // Below is testing for a version higher / lower detection system
+
+    //internal static void LogVersionDifferences()
+    //{
+    //    var installedMods = GetLoadedMods();
+    //    bool foundDifferences = false;
+
+    //    foreach (var mod in installedMods)
+    //    {
+    //        if (NormalizeVersion(mod.ModVersion) != NormalizeVersion(mod.modVersionCached))
+    //        {
+    //            foundDifferences = true;
+    //            Logging.Log($"Version difference detected for mod '{mod.ModName}': Installed version ({mod.ModVersion}) does not match Cached version ({mod.modVersionCached}).");
+    //        }
+    //    }
+
+    //    if (!foundDifferences)
+    //    {
+    //        Logging.Log("No version differences found among installed mods.");
+    //    }
+    //}
+
+    //// Normalizes version by adding trailing zeros if necessary
+    //private static string NormalizeVersion(string version)
+    //{
+    //    // Assuming the version string is in the format "v1.2.3" or "v1.2.3.0"
+    //    version = version.Replace("v", "").Trim();
+
+    //    // Split the version into components
+    //    var versionComponents = version.Split('.');
+    //    // Fill the missing components with "0"
+    //    while (versionComponents.Length < 4)
+    //    {
+    //        version = version + ".0";
+    //        versionComponents = version.Split('.');
+    //    }
+
+    //    return version;
+    //}
 }

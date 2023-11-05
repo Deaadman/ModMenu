@@ -12,6 +12,7 @@ internal sealed class MelonModInitializer : MelonMod
     public override void OnInitializeMelon()
     {
         LoadLocalizations();
+        // ModDetailsFetcher.LogVersionDifferences();
     }
 
     private static void LoadLocalizations()

@@ -19,7 +19,7 @@ internal class ModConfigManager
                 m_ModDescription = ModDescription,
                 m_ModVersion = ModVersion,
                 m_ModAuthor = ModAuthor,
-                m_ModLoaderVersion = ModLoaderVersion,
+                m_ModVersionMelonLoader = ModLoaderVersion,
                 m_ModVersionCached = modVersionCached
             };
 
