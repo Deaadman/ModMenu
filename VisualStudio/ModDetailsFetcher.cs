@@ -4,33 +4,47 @@ namespace ModMenu;
 
 internal class ModDetailsFetcher
 {
-    internal static List<(string ModType, string ModName, string ModDescription, string ModVersion, string ModAuthor, string ModLoaderVersion, string modVersionCached)> GetLoadedMods()
+    internal static List<ModDetails> GetLoadedMods()
     {
-        var installedMods = new List<(string ModType, string ModName, string ModDescription, string ModVersion, string ModAuthor, string ModLoaderVersion, string modVersionCached)>();
-        var allMelons = MelonMod.RegisteredMelons.Cast<MelonBase>().Concat(MelonPlugin.RegisteredMelons.Cast<MelonBase>());
-        var cachedModVersions = CacheManager.GetCachedModVersions();
+        List<ModDetails> installedMods = new();
+        IEnumerable<MelonBase> allMelons = MelonMod.RegisteredMelons.Cast<MelonBase>()
+                               .Concat(MelonPlugin.RegisteredMelons.Cast<MelonBase>());
+        Dictionary<string, string> VersionsAPI = CacheManager.GetVersionsAPI();
 
-        foreach (var melon in allMelons)
+        foreach (MelonBase melon in allMelons)
         {
-            var modType = melon is MelonMod ? "Mod" : "Plugin";
-            var modName = melon.Info.Name.Replace(" ", "");
-            var modDescription = GetAttributeValue<AssemblyDescriptionAttribute>(melon.GetType().Assembly, attr => attr.Description) ?? string.Empty;
-            var modVersion = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version) ?? string.Empty;
-            var modAuthor = melon.Info.Author ?? string.Empty;
-            var modLoaderVersion = GetModLoaderVersion(melon.GetType().Assembly) ?? string.Empty;
-            var modVersionCached = cachedModVersions != null && cachedModVersions.TryGetValue(modName, out var version) ? version : string.Empty;
+            string Type = melon is MelonMod ? "Mod" : "Plugin";
+            string Name = melon.Info.Name.Replace(" ", "");
+            string Description = GetAttributeValue<AssemblyDescriptionAttribute>(melon.GetType().Assembly, attr => attr.Description) ?? string.Empty;
+            string Author = melon.Info.Author ?? string.Empty;
+            string Version = GetAttributeValue<AssemblyFileVersionAttribute>(melon.GetType().Assembly, attr => attr.Version) ?? string.Empty;
+            string VersionAPI = VersionsAPI.TryGetValue(Name, out string? version) ? version : string.Empty;
+            string VersionML = GetModLoaderVersion(melon.GetType().Assembly) ?? string.Empty;
 
-            installedMods.Add((
-                ModType: modType,
-                ModName: modName,
-                ModDescription: modDescription,
-                ModVersion: modVersion,
-                ModAuthor: modAuthor,
-                ModLoaderVersion: modLoaderVersion,
-                modVersionCached
-            ));
+            installedMods.Add(new ModDetails
+            {
+                Type = Type,
+                Name = Name,
+                Description = Description,
+                Author = Author,
+                Version = Version,
+                VersionAPI = VersionAPI,
+                VersionML = VersionML
+            });
         }
+
         return installedMods;
+    }
+
+    internal struct ModDetails
+    {
+        public string Type;
+        public string Name;
+        public string Description;
+        public string Author;
+        public string Version;
+        public string VersionAPI;
+        public string VersionML;
     }
 
     private static string GetModLoaderVersion(Assembly assembly)
@@ -52,41 +66,41 @@ internal class ModDetailsFetcher
 
     // Below is testing for a version higher / lower detection system
 
-    //internal static void LogVersionDifferences()
-    //{
-    //    var installedMods = GetLoadedMods();
-    //    bool foundDifferences = false;
+    internal static void LogVersionDifferences()
+    {
+        var installedMods = GetLoadedMods();
+        bool foundDifferences = false;
 
-    //    foreach (var mod in installedMods)
-    //    {
-    //        if (NormalizeVersion(mod.ModVersion) != NormalizeVersion(mod.modVersionCached))
-    //        {
-    //            foundDifferences = true;
-    //            Logging.Log($"Version difference detected for mod '{mod.ModName}': Installed version ({mod.ModVersion}) does not match Cached version ({mod.modVersionCached}).");
-    //        }
-    //    }
+        foreach (var mod in installedMods)
+        {
+            if (NormalizeVersion(mod.Version) != NormalizeVersion(mod.VersionAPI))
+            {
+                foundDifferences = true;
+                Logging.Log($"Version difference detected for mod '{mod.Name}': Installed version ({mod.Version}) does not match API version ({mod.VersionAPI}).");
+            }
+        }
 
-    //    if (!foundDifferences)
-    //    {
-    //        Logging.Log("No version differences found among installed mods.");
-    //    }
-    //}
+        if (!foundDifferences)
+        {
+            Logging.Log("No version differences found among installed mods.");
+        }
+    }
 
-    //// Normalizes version by adding trailing zeros if necessary
-    //private static string NormalizeVersion(string version)
-    //{
-    //    // Assuming the version string is in the format "v1.2.3" or "v1.2.3.0"
-    //    version = version.Replace("v", "").Trim();
+    // Normalizes version by adding trailing zeros if necessary
+    private static string NormalizeVersion(string version)
+    {
+        // Assuming the version string is in the format "v1.2.3" or "v1.2.3.0"
+        version = version.Replace("v", "").Trim();
 
-    //    // Split the version into components
-    //    var versionComponents = version.Split('.');
-    //    // Fill the missing components with "0"
-    //    while (versionComponents.Length < 4)
-    //    {
-    //        version = version + ".0";
-    //        versionComponents = version.Split('.');
-    //    }
+        // Split the version into components
+        var versionComponents = version.Split('.');
+        // Fill the missing components with "0"
+        while (versionComponents.Length < 4)
+        {
+            version += ".0";
+            versionComponents = version.Split('.');
+        }
 
-    //    return version;
-    //}
+        return version;
+    }
 }

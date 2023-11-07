@@ -1,8 +1,8 @@
 ﻿namespace ModMenu;
 
-internal class InitializeMenuItem
+internal static class InitializeMenuItem
 {
-    private const int MOD_MENU_ID = 0x4d4d;
+    private const int ModMenuId = 0x4d4d;
 
     [HarmonyPatch(typeof(Panel_Sandbox), nameof(Panel_Sandbox.ConfigureMenu))]
     private static class AddModMenuItem
@@ -15,12 +15,22 @@ internal class InitializeMenuItem
             AddAnotherMenuItem(basicMenu);
             BasicMenu.BasicMenuItemModel firstItem = basicMenu.m_ItemModelList[0];
 
-            int desiredIndex = basicMenu.m_ItemModelList.Count - 2;
-            desiredIndex = Math.Max(0, desiredIndex);
-
+            int desiredIndex = Math.Max(0, basicMenu.m_ItemModelList.Count - 2);
             Color defaultHighlightTint = Color.white;
 
-            BasicMenu.BasicMenuItemModel newItem = new("", MOD_MENU_ID, desiredIndex, Localization.Get("GAMEPLAY_Mods"), Localization.Get("GAMEPLAY_ModMenuDescription"), null, new Action(() => ShowModMenu(__instance)),firstItem.m_NormalTint,defaultHighlightTint);
+            Action onClickAction = new(() => ShowModMenu(__instance));
+
+            BasicMenu.BasicMenuItemModel newItem = new(
+                id: "",
+                value: ModMenuId,
+                itemIndex: desiredIndex,
+                labelText: Localization.Get("GAMEPLAY_Mods"),
+                descriptionText: Localization.Get("GAMEPLAY_ModMenuDescription"),
+                secondaryText: null,
+                onClickAction: onClickAction,
+                tintNormal: firstItem.m_NormalTint,
+                tintHighlight: defaultHighlightTint
+            );
 
             basicMenu.m_ItemModelList.Insert(desiredIndex, newItem);
         }
@@ -33,13 +43,11 @@ internal class InitializeMenuItem
             if (modMenuTransform == null) return;
 
             Panel_ModMenu modMenu = modMenuTransform.GetComponent<Panel_ModMenu>();
-
             __instance.enabled = false;
 
-            Transform parentTransform = __instance.gameObject.transform;
-            for (int i = 0; i < parentTransform.childCount; i++)
+            for (int i = 0; i < __instance.gameObject.transform.childCount; i++)
             {
-                Transform child = parentTransform.GetChild(i);
+                Transform child = __instance.gameObject.transform.GetChild(i);
                 if (child.name != "Panel_ModMenu")
                 {
                     child.gameObject.SetActive(false);
@@ -51,15 +59,18 @@ internal class InitializeMenuItem
 
         private static void AddAnotherMenuItem(BasicMenu basicMenu)
         {
-            GameObject gameObject = NGUITools.AddChild(basicMenu.m_MenuGrid.gameObject, basicMenu.m_BasicMenuItemPrefab);
-            BasicMenuItem item = gameObject.GetComponent<BasicMenuItem>();
-            BasicMenu.BasicMenuItemView view = item.m_View;
+            GameObject menuItem = NGUITools.AddChild(basicMenu.m_MenuGrid.gameObject, basicMenu.m_BasicMenuItemPrefab);
+            BasicMenuItem itemComponent = menuItem.GetComponent<BasicMenuItem>();
+            BasicMenu.BasicMenuItemView itemView = itemComponent.m_View;
             int itemIndex = basicMenu.m_MenuItems.Count;
-            EventDelegate onClick = new(new Action(() => basicMenu.OnItemClicked(itemIndex)));
-            view.m_Button.onClick.Add(onClick);
-            EventDelegate onDoubleClick = new(new Action(() => basicMenu.OnItemDoubleClicked(itemIndex)));
-            view.m_DoubleClickButton.m_OnDoubleClick.Add(onDoubleClick);
-            basicMenu.m_MenuItems.Add(view);
+
+            EventDelegate.Callback onClickCallback = new Action(() => basicMenu.OnItemClicked(itemIndex));
+            itemView.m_Button.onClick.Add(new EventDelegate(onClickCallback));
+
+            EventDelegate.Callback onDoubleClickCallback = new Action(() => basicMenu.OnItemDoubleClicked(itemIndex));
+            itemView.m_DoubleClickButton.m_OnDoubleClick.Add(new EventDelegate(onDoubleClickCallback));
+
+            basicMenu.m_MenuItems.Add(itemView);
         }
     }
 }

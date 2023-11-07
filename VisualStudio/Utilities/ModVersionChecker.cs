@@ -9,7 +9,7 @@ internal class ModVersionChecker : IDisposable
 
     internal static async Task<Dictionary<string, string>> FetchModVersionsAsync()
     {
-        var cachedModVersions = CacheManager.GetCachedModVersions();
+        var cachedModVersions = CacheManager.GetVersionsAPI();
         var modVersionsToUpdate = new Dictionary<string, string>();
 
         Logging.Log("Fetching new mod versions from API.");

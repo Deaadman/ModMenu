@@ -11,13 +11,15 @@ public class Panel_ModMenu : Panel_AutoReferenced
 
     // public ButtonLegendContainer m_ButtonLegendContainer = new();
 
-    private GameObjectsInitializer m_GameObjectInitializer;
+    private GameObjectsInitializer? m_GameObjectInitializer;
 
-    private Action[] onItemClickActions;
+    private Action[]? m_ItemClickedAction;
+
+    public List<ModConfig>? ModMenuItems;
 
     #region Basic Menu
-    private BasicMenu m_BasicMenu;
-    private GameObject m_BasicMenuRoot;
+    private BasicMenu? m_BasicMenu;
+    private GameObject? m_BasicMenuRoot;
     #endregion
 
     #region Header
@@ -25,20 +27,38 @@ public class Panel_ModMenu : Panel_AutoReferenced
     private readonly string m_HeaderText = "";
     private Vector3 m_HeaderOffset = Vector3.zero;
     #endregion
-    
-    private UILabel m_ModName;
-    private UILabel m_ModDescription;
-    private UILabel m_ModAuthor;
-    private UILabel m_ModVersion;
-    private UILabel m_ModVersionCached;
-    private UILabel m_ModVersionMelonLoader;
 
-    public List<ModConfig> m_ModItems;
+    #region UILabels
+    private UILabel? m_Name;
+    private UILabel? m_Description;
+    private UILabel? m_Author;
+    private UILabel? m_Version;
+    private UILabel? m_VersionAPI;
+    private UILabel? m_VersionML;
+    #endregion
 
     private void AddMenuItem(int itemIndex)
     {
-        var (modNameLocalization, modDescriptionLocalization) = GetLocalizations(m_ModItems[itemIndex].m_ModName);
-        m_BasicMenu.AddItem(m_ModItems[itemIndex].m_ModName, m_ModItems[itemIndex].m_ModName.GetHashCode(), itemIndex, Localization.Get(modNameLocalization), null, null, onItemClickActions[itemIndex], Color.clear, Color.clear);
+        if (ModMenuItems != null && m_ItemClickedAction != null && itemIndex >= 0 && itemIndex < ModMenuItems.Count)
+        {
+            string? itemName = ModMenuItems[itemIndex].Name;
+            if (itemName != null)
+            {
+                var modNameLocalization = GetLocalizations(itemName).Item1;
+
+                m_BasicMenu?.AddItem(
+                        itemName,
+                        itemName.GetHashCode(),
+                        itemIndex,
+                        Localization.Get(modNameLocalization),
+                        null,
+                        null,
+                        m_ItemClickedAction[itemIndex],
+                        Color.clear,
+                        Color.clear
+                    );
+            }
+        }
 
         //m_GameObjectInitializer.InitializeModStatusSprites(menuItemGameObject.transform); // Try to get add a gameobject sprite to each menu item
     }
@@ -52,10 +72,11 @@ public class Panel_ModMenu : Panel_AutoReferenced
         m_BasicMenu.Reset();
         m_BasicMenu.UpdateTitle(m_HeaderTitle, m_HeaderText, m_HeaderOffset);
 
-        for (int i = 0; i < m_ModItems.Count; i++)
+        for (int i = 0; i < ModMenuItems?.Count; i++)
         {
             AddMenuItem(i);
         }
+
         m_BasicMenu.SetBackAction(new Action(OnClickBack));
         //m_BasicMenu.EnableConfirm(true, "");                                                 // A start for adding more buttons?
     }
@@ -65,12 +86,12 @@ public class Panel_ModMenu : Panel_AutoReferenced
         if (enable)
         {
             ConfigureMenu();
-            m_BasicMenu.Enable(true);
+            m_BasicMenu?.Enable(true);
             m_Panel.alpha = 1;
             //GameManager.GetCameraEffects().DepthOfFieldTurnOn();                                          // Causing an issue with the duplicated Copyright GameObject - so disablling for now.
             return;
         }
-        m_BasicMenu.Enable(false);
+        m_BasicMenu?.Enable(false);
         m_Panel.alpha = 0;
         //GameManager.GetCameraEffects().DepthOfFieldTurnOff(false);
     }
@@ -88,23 +109,23 @@ public class Panel_ModMenu : Panel_AutoReferenced
         m_BasicMenu = InstantiateMenu(InterfaceManager.s_BasicMenuPrefab, m_BasicMenuRoot, gameObject, this);
         m_BasicMenu.m_CanScroll = true;
 
-        m_ModItems = ModConfigManager.CreateModConfigs();
+        ModMenuItems = ModConfigManager.CreateModConfigs();
 
         m_GameObjectInitializer = gameObject.AddComponent<GameObjectsInitializer>();
         m_GameObjectInitializer.InitializeDetails(transform);
 
-        m_ModName = m_GameObjectInitializer.ModName;
-        m_ModDescription = m_GameObjectInitializer.ModDescription;
-        m_ModAuthor = m_GameObjectInitializer.ModAuthor;
-        m_ModVersion = m_GameObjectInitializer.ModVersion;
-        m_ModVersionCached = m_GameObjectInitializer.ModVersionCached;
-        m_ModVersionMelonLoader = m_GameObjectInitializer.ModLoaderVersion;
+        m_Name = m_GameObjectInitializer.Name;
+        m_Description = m_GameObjectInitializer.Description;
+        m_Author = m_GameObjectInitializer.Author;
+        m_Version = m_GameObjectInitializer.Version;
+        m_VersionAPI = m_GameObjectInitializer.VersionAPI;
+        m_VersionML = m_GameObjectInitializer.VersionML;
 
-        onItemClickActions = new Action[m_ModItems.Count];
-        for (int i = 0; i < m_ModItems.Count; i++)
+        m_ItemClickedAction = new Action[ModMenuItems.Count];
+        for (int i = 0; i < ModMenuItems.Count; i++)
         {
             int index = i;
-            onItemClickActions[i] = () => OnClickMod(index);
+            m_ItemClickedAction[i] = () => OnClickMod(index);
         }
     }
 
@@ -128,30 +149,34 @@ public class Panel_ModMenu : Panel_AutoReferenced
                 }
             }
         }
-        m_GameObjectInitializer.SetGameObjectsActive(false);
+        m_GameObjectInitializer?.SetGameObjectsActive(false);
         Enable(false);
     }
 
-    private void OnClickMod(int itemIndex)
+    private void OnClickMod(int itemIndex)              // Update this to use a fallback system, e.g if no version is found or translation is found then roll back to N/A or the mod name. Then log if it's used the rollback system.
     {
         GameAudioManager.PlayGUIButtonClick();
-        m_GameObjectInitializer.SetGameObjectsActive(true);
-        if (itemIndex >= 0 && itemIndex < m_ModItems.Count)
+        m_GameObjectInitializer?.SetGameObjectsActive(true);
+        if (itemIndex >= 0 && ModMenuItems != null && itemIndex < ModMenuItems.Count)
         {
-            var modConfig = m_ModItems[itemIndex];
-            var (modNameLocalizationKey, modDescriptionLocalizationKey) = GetLocalizations(m_ModItems[itemIndex].m_ModName);
-            m_ModName.text = Localization.Get(modNameLocalizationKey);
-            m_ModDescription.text = Localization.Get(modDescriptionLocalizationKey);
-            m_ModAuthor.text = modConfig.m_ModAuthor;
-            m_ModVersion.text = "v" + modConfig.m_ModVersion;
-            m_ModVersionCached.text = "v" + modConfig.m_ModVersionCached;
-            m_ModVersionMelonLoader.text = "v" + modConfig.m_ModVersionMelonLoader;
+            var modConfig = ModMenuItems[itemIndex];
+            if (modConfig != null)
+            {
+                var (modNameLocalizationKey, modDescriptionLocalizationKey) = GetLocalizations(modConfig.Name!);
 
-            m_GameObjectInitializer.SetMelonSprite(modConfig.m_ModType == "Plugin");
+                if (m_Name != null) m_Name.text = Localization.Get(modNameLocalizationKey);
+                if (m_Description != null) m_Description.text = Localization.Get(modDescriptionLocalizationKey);
+                if (m_Author != null) m_Author.text = modConfig.Author ?? string.Empty;
+                if (m_Version != null) m_Version.text = "v" + modConfig.Version ?? string.Empty;
+                if (m_VersionAPI != null) m_VersionAPI.text = "v" + modConfig.VersionAPI ?? string.Empty;
+                if (m_VersionML != null) m_VersionML.text = "v" + modConfig.VersionML ?? string.Empty;
+
+                m_GameObjectInitializer?.SetMelonSprite(modConfig.Type == "Plugin");
+            }
         }
     }
 
-    private void Update()
+    internal void Update()
     {
         m_BasicMenu?.ManualUpdate();
     }

@@ -7,7 +7,7 @@ internal static class CacheManager
 {
     private static readonly string cacheFilePath = "APICachedMods.json";
 
-    internal static Dictionary<string, string> GetCachedModVersions()
+    internal static Dictionary<string, string> GetVersionsAPI()
     {
         if (!File.Exists(cacheFilePath))
         {
@@ -21,7 +21,7 @@ internal static class CacheManager
 
     internal static void UpdateCache(Dictionary<string, string> updates)
     {
-        var currentCache = GetCachedModVersions();
+        var currentCache = GetVersionsAPI();
         bool cacheUpdated = false;
         foreach (var update in updates)
         {
